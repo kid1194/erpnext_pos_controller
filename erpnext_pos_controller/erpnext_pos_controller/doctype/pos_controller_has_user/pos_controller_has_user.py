@@ -7,5 +7,5 @@
 from frappe.model.document import Document
 
 
-class POSControllerItem(Document):
+class POSControllerHasUser(Document):
     pass
