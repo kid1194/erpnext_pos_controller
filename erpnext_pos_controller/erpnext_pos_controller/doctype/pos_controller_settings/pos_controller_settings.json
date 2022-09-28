@@ -1,0 +1,128 @@
+{
+ "actions": [],
+ "creation": "2022-04-04 04:04:04.119400",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "info_section",
+  "enabled",
+  "users_section",
+  "apply_settings_for_all_users",
+  "users_column",
+  "applicable_users",
+  "items_section",
+  "default_item_max_total",
+  "restrict_all_items_max_total",
+  "restricted_items",
+  "max_total_error"
+ ],
+ "fields": [
+  {
+   "fieldname": "info_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Is Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "users_section",
+   "fieldtype": "Section Break",
+   "label": "Users"
+  },
+  {
+   "fieldname": "apply_settings_for_all_users",
+   "fieldtype": "Check",
+   "label": "Apply Settings For All Users",
+   "default": "0"
+  },
+  {
+   "fieldname": "applicable_users",
+   "fieldtype": "Table MultiSelect",
+   "label": "Applicable Users",
+   "options": "POS Controller Has User",
+   "read_only_depends_on": "eval:doc.apply_settings_for_all_users",
+   "mandatory_depends_on": "eval:!doc.apply_settings_for_all_users"
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Items"
+  },
+  {
+   "fieldname": "default_item_max_total",
+   "fieldtype": "Currency",
+   "label": "Default Item Max Total",
+   "options": "Company:company:company_currency",
+   "default": "0",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "restrict_all_items_max_total",
+   "fieldtype": "Check",
+   "label": "Restrict Max Total For All Items",
+   "default": "0"
+  },
+  {
+   "fieldname": "restricted_items",
+   "fieldtype": "Table",
+   "label": "Restrict Items",
+   "options": "POS Controller Item",
+   "read_only_depends_on": "eval:doc.restrict_all_items_max_total",
+   "mandatory_depends_on": "eval:!doc.restrict_all_items_max_total"
+  },
+  {
+   "fieldname": "max_total_error",
+   "fieldtype": "Data",
+   "label": "Max Total Error",
+   "default": "{item} has exceeded the maximum total allowed, {max_total}."
+  }
+ ],
+ "icon": "fa fa-cog",
+ "issingle": 1,
+ "links": [],
+ "modified": "2022-04-04 04:04:04.119400",
+ "modified_by": "Administrator",
+ "module": "ERPNext POS Controller",
+ "name": "POS Controller Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Administrator",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
