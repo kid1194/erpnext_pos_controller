@@ -5,6 +5,10 @@
 *  Licence: Please refer to license.txt
 */
 
+if (!erpnext.PointOfSale.Controller) {
+    throw Error('The POS Controller is not loaded yet.');
+}
+
 class POSControllerSettings {
     constructor(data) {
         for (var k in data) {
