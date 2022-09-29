@@ -6,7 +6,7 @@
 */
 
 if (!erpnext.PointOfSale.Controller) {
-    throw Error('The POS Controller is not loaded yet.');
+    throw new Error('The POS Controller is not loaded yet.');
 }
 
 class POSControllerSettings {
