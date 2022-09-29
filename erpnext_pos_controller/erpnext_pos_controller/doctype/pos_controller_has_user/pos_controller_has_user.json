@@ -18,6 +18,7 @@
    "label": "User",
    "options": "User",
    "reqd": 1,
+   "unique": 1,
    "ignore_user_permissions": 1,
    "in_list_view": 1,
    "allow_in_quick_entry": 1

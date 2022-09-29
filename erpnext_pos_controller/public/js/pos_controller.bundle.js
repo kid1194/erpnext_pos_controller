@@ -11,20 +11,24 @@ if (!erpnext.PointOfSale.Controller) {
 
 class POSControllerSettings {
     constructor(data) {
-        for (var k in data) {
-            this[k] = data[k];
+        $.extend(this, data);
+        if (this.max_total_error) {
+            this.max_total_error = this.max_total_error
+                .replace(/\{item\}/g, '{0}')
+                .replace(/\{max_total\}/g, '{1}');
         }
     }
     is_valid(doc, name, total) {
         let max_total = this.get_max_total(name);
         if (max_total >= 0 && total > max_total) {
-            frappe.throw(__(
-                this.max_total_error,
-                {
-                    item: name,
-                    max_total: format_currency(max_total, doc.currency || null)
-                }
-            ));
+            frappe.msgprint({
+                title: __('Total Error'),
+                indicator: 'red',
+                message: __(
+                    this.max_total_error,
+                    [name, format_currency(max_total, doc.currency || null)]
+                )
+            });
             return false;
         }
         return true;
@@ -72,16 +76,19 @@ erpnext.PointOfSale.Controller = class PointOfSaleController extends erpnext.Poi
                 this.frm && this.frm.doc && this.frm.doc.items
                 && this.frm.doc.items.length
             ) {
-                var items = this.frm.doc.items,
+                var doc = this.events.get_frm().doc,
+                items = this.frm.doc.items,
                 l = items.length,
-                i = 0;
+                i = 0,
+                is_valid = true;
                 for (; i < l; i++) {
                     let name = items[i].name,
                     total = flt(items[i].rate) * flt(items[i].qty);
-                    if (!this._settings.is_valid(this.events.get_frm().doc, name, total)) {
-                        return;
+                    if (!this._settings.is_valid(doc, name, total)) {
+                        is_valid = false;
                     }
                 }
+                if (!is_valid) return;
             }
         }
         await super.save_and_checkout();
@@ -99,9 +106,11 @@ erpnext.PointOfSale.ItemDetails = class PointOfSaleItemDetails extends erpnext.P
                 var _rate_on_change = this.rate_control.df.onchange;
                 this.rate_control.df.onchange = function() {
                     if (this.value) {
-                        var item_row = frappe.get_doc(me.doctype, me.name),
-                        total = flt(this.value) * flt(item_row.qty);
-                        if (!me._settings.is_valid(me.events.get_frm().doc, me.name, total)) {
+                        let qty = me.qty_control
+                            ? me.qty_control.get_value()
+                            : frappe.get_doc(me.doctype, me.name).qty || 0,
+                        total = flt(this.value) * flt(qty);
+                        if (total && !me._settings.is_valid(me.events.get_frm().doc, me.name, total)) {
                             return;
                         }
                     }
@@ -113,9 +122,11 @@ erpnext.PointOfSale.ItemDetails = class PointOfSaleItemDetails extends erpnext.P
                 var _qty_on_change = this.qty_control.df.onchange;
                 this.qty_control.df.onchange = function() {
                     if (this.value) {
-                        var item_row = frappe.get_doc(me.doctype, me.name),
-                        total = flt(item_row.rate) * flt(this.value);
-                        if (!me._settings.is_valid(me.events.get_frm().doc, me.name, total)) {
+                        let rate = me.rate_control
+                            ? me.rate_control.get_value()
+                            : frappe.get_doc(me.doctype, me.name).rate || 0,
+                        total = flt(rate) * flt(this.value);
+                        if (total && !me._settings.is_valid(me.events.get_frm().doc, me.name, total)) {
                             return;
                         }
                     }
