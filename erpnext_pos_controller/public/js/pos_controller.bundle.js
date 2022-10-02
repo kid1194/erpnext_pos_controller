@@ -18,17 +18,19 @@ class POSControllerSettings {
                 .replace(/\{max_total\}/g, '{1}');
         }
     }
-    is_valid(doc, name, total) {
+    is_valid(doc, name, total, check) {
         let max_total = this.get_max_total(name);
         if (max_total >= 0 && total > max_total) {
-            frappe.msgprint({
-                title: __('Total Error'),
-                indicator: 'red',
-                message: __(
-                    this.max_total_error,
-                    [name, format_currency(max_total, doc.currency || null)]
-                )
-            });
+            if (!check) {
+                frappe.msgprint({
+                    title: __('Total Error'),
+                    indicator: 'red',
+                    message: __(
+                        this.max_total_error,
+                        [name, format_currency(max_total, doc.currency || null)]
+                    )
+                });
+            }
             return false;
         }
         return true;
@@ -102,37 +104,54 @@ erpnext.PointOfSale.ItemDetails = class PointOfSaleItemDetails extends erpnext.P
         super.bind_custom_control_change_event();
         if (this._settings && this._settings.enabled) {
             var me = this;
-            if (this.rate_control && this.allow_rate_change) {
-                var _rate_on_change = this.rate_control.df.onchange;
-                this.rate_control.df.onchange = function() {
-                    if (this.value) {
+            if (this.allow_rate_change && this.rate_control && this.rate_control.$input) {
+                this.rate_control.$input.on('change', function() {
+                    if (this.value && flt(this.value)) {
                         let qty = me.qty_control
                             ? me.qty_control.get_value()
                             : frappe.get_doc(me.doctype, me.name).qty || 0,
                         total = flt(this.value) * flt(qty);
-                        if (total && !me._settings.is_valid(me.events.get_frm().doc, me.name, total)) {
-                            return;
+                        if (
+                            total
+                            && !me._settings.is_valid(
+                                me.events.get_frm().doc,
+                                me.name,
+                                total,
+                                true
+                            )
+                        ) {
+                            let max_total = me._settings.get_max_total(me.name);
+                            if (max_total) {
+                                $(this).val(flt(max_total) / flt(qty));
+                            }
                         }
                     }
-                    if ((this.value || flt(this.value) === 0) && _rate_on_change) _rate_on_change.call(this);
-                };
-                this.rate_control.refresh();
+                });
             }
-            if (this.qty_control) {
-                var _qty_on_change = this.qty_control.df.onchange;
-                this.qty_control.df.onchange = function() {
-                    if (this.value) {
+            if (this.qty_control && this.qty_control.$input) {
+                this.qty_control.$input.on('change', function() {
+                    if (this.value && flt(this.value)) {
                         let rate = me.rate_control
                             ? me.rate_control.get_value()
                             : frappe.get_doc(me.doctype, me.name).rate || 0,
                         total = flt(rate) * flt(this.value);
-                        if (total && !me._settings.is_valid(me.events.get_frm().doc, me.name, total)) {
-                            return;
+                        if (
+                            total
+                            && !me._settings.is_valid(
+                                me.events.get_frm().doc,
+                                me.name,
+                                total,
+                                true
+                            )
+                        ) {
+                            let max_total = me._settings.get_max_total(me.name);
+                            if (max_total) {
+                                let max_qty = flt(max_total) / flt(rate);
+                                $(this).val(cint(max_qty));
+                            }
                         }
                     }
-                    if ((this.value || flt(this.value) === 0) && _qty_on_change) _qty_on_change.call(this);
-                };
-                this.qty_control.refresh();
+                });
             }
         }
     }
