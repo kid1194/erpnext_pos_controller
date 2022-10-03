@@ -5,6 +5,7 @@
 
 
 from . import __version__ as app_version
+from frappe import __version__ as frappe_version
 
 
 app_name = "erpnext_pos_controller"
@@ -15,6 +16,7 @@ app_icon = "octicon octicon-person"
 app_color = "blue"
 app_email = "kid1194@gmail.com"
 app_license = "MIT"
+is_frappe_above_v13 = int(frappe_version.split('.')[0]) > 13
 
 # Includes in <head>
 # ------------------
@@ -31,7 +33,9 @@ app_license = "MIT"
 # webform_include_css = {"doctype": "public/css/doctype.css"}
 
 # include js in page
-page_js = {"Point of Sale" : "public/js/pos_controller.bundle.js"}
+page_js = {
+    "Point of Sale" : "public/js/pos_controller.bundle.js" if is_frappe_above_v13 else "public/js/pos_controller_v13.bundle.js"
+}
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}

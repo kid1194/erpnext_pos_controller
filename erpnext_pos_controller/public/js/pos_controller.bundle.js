@@ -100,58 +100,68 @@ erpnext.PointOfSale.ItemDetails = class PointOfSaleItemDetails extends erpnext.P
     set_controller_settings(data) {
         this._settings = data;
     }
-    bind_custom_control_change_event() {
+     bind_custom_control_change_event() {
         super.bind_custom_control_change_event();
         if (this._settings && this._settings.enabled) {
             var me = this;
-            if (this.allow_rate_change && this.rate_control && this.rate_control.$input) {
-                this.rate_control.$input.on('change', function() {
+            if (this.allow_rate_change && this.rate_control && !this.rate_control.df.read_only) {
+                this._rate_control_onchange = this.rate_control.df.onchange;
+                this.rate_control.df.onchange = function() {
+                    var is_valid = true;
                     if (this.value && flt(this.value)) {
-                        let qty = me.qty_control
-                            ? me.qty_control.get_value()
-                            : frappe.get_doc(me.doctype, me.name).qty || 0,
-                        total = flt(this.value) * flt(qty);
-                        if (
-                            total
-                            && !me._settings.is_valid(
-                                me.events.get_frm().doc,
-                                me.name,
-                                total,
-                                true
-                            )
-                        ) {
-                            let max_total = me._settings.get_max_total(me.name);
-                            if (max_total) {
-                                $(this).val(flt(max_total) / flt(qty));
+                        me.events.form_updated(me.doctype, me.name, 'rate', this.value).then(() => {
+							let item_row = frappe.get_doc(me.doctype, me.name);
+							let doc = me.events.get_frm().doc;
+							let total = flt(this.value) * flt(item_row.qty);
+                            if (
+                                total
+                                && !me._settings.is_valid(
+                                    doc,
+                                    me.name,
+                                    total,
+                                    true
+                                )
+                            ) {
+                                is_valid = false;
+                                let max_total = me._settings.get_max_total(me.name);
+                                if (max_total) {
+                                    $(this).val(flt(max_total) / flt(item_row.qty));
+                                }
                             }
-                        }
+						});
                     }
-                });
+                    if (me._rate_control_onchange && is_valid) me._rate_control_onchange.call(this);
+                };
             }
-            if (this.qty_control && this.qty_control.$input) {
-                this.qty_control.$input.on('change', function() {
+            if (this.qty_control && !this.qty_control.df.read_only) {
+                this._qty_control_onchange = this.qty_control.df.onchange;
+                this.qty_control.df.onchange = function() {
+                    var is_valid = true;
                     if (this.value && flt(this.value)) {
-                        let rate = me.rate_control
-                            ? me.rate_control.get_value()
-                            : frappe.get_doc(me.doctype, me.name).rate || 0,
-                        total = flt(rate) * flt(this.value);
-                        if (
-                            total
-                            && !me._settings.is_valid(
-                                me.events.get_frm().doc,
-                                me.name,
-                                total,
-                                true
-                            )
-                        ) {
-                            let max_total = me._settings.get_max_total(me.name);
-                            if (max_total) {
-                                let max_qty = flt(max_total) / flt(rate);
-                                $(this).val(cint(max_qty));
+                        me.events.form_updated(me.doctype, me.name, 'qty', this.value).then(() => {
+							let item_row = frappe.get_doc(me.doctype, me.name);
+							let doc = me.events.get_frm().doc;
+							let total = flt(item_row.rate) * flt(this.value);
+                            if (
+                                total
+                                && !me._settings.is_valid(
+                                    doc,
+                                    me.name,
+                                    total,
+                                    true
+                                )
+                            ) {
+                                is_valid = false;
+                                let max_total = me._settings.get_max_total(me.name);
+                                if (max_total) {
+                                    let max_qty = flt(max_total) / flt(item_row.rate);
+                                    $(this).val(cint(max_qty));
+                                }
                             }
-                        }
+						});
                     }
-                });
+                    if (me._qty_control_onchange && is_valid) me._qty_control_onchange.call(this);
+                };
             }
         }
     }
