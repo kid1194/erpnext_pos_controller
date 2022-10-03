@@ -124,9 +124,9 @@ erpnext.PointOfSale.ItemDetails = class PointOfSaleItemDetails extends erpnext.P
                     var is_valid = true;
                     if (this.value && flt(this.value)) {
                         me.events.form_updated(me.doctype, me.name, 'rate', this.value).then(() => {
-							let item_row = frappe.get_doc(me.doctype, me.name);
-							let doc = me.events.get_frm().doc;
-							let total = flt(this.value) * flt(item_row.qty);
+                            let item_row = frappe.get_doc(me.doctype, me.name);
+                            let doc = me.events.get_frm().doc;
+                            let total = flt(this.value) * flt(item_row.qty);
                             if (
                                 total
                                 && !me._settings.is_valid(
@@ -142,7 +142,7 @@ erpnext.PointOfSale.ItemDetails = class PointOfSaleItemDetails extends erpnext.P
                                     $(this).val(flt(max_total) / flt(item_row.qty));
                                 }
                             }
-						});
+                        });
                     }
                     if (me._rate_control_onchange && is_valid) me._rate_control_onchange.call(this);
                 };
@@ -153,9 +153,9 @@ erpnext.PointOfSale.ItemDetails = class PointOfSaleItemDetails extends erpnext.P
                     var is_valid = true;
                     if (this.value && flt(this.value)) {
                         me.events.form_updated(me.doctype, me.name, 'qty', this.value).then(() => {
-							let item_row = frappe.get_doc(me.doctype, me.name);
-							let doc = me.events.get_frm().doc;
-							let total = flt(item_row.rate) * flt(this.value);
+                            let item_row = frappe.get_doc(me.doctype, me.name);
+                            let doc = me.events.get_frm().doc;
+                            let total = flt(item_row.rate) * flt(this.value);
                             if (
                                 total
                                 && !me._settings.is_valid(
@@ -172,7 +172,7 @@ erpnext.PointOfSale.ItemDetails = class PointOfSaleItemDetails extends erpnext.P
                                     $(this).val(cint(max_qty));
                                 }
                             }
-						});
+                        });
                     }
                     if (me._qty_control_onchange && is_valid) me._qty_control_onchange.call(this);
                 };
