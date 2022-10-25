@@ -14,10 +14,10 @@ from erpnext_pos_controller.api.handler import _SETTINGS_DOCTYPE, _SETTINGS_CACH
 class POSControllerSettings(Document):
     def before_validate(self):
         if self.restrict_all_items_max_total:
-            self.items = []
+            self.restricted_items.clear()
     
     def validate(self):
-        if not self.restrict_all_items_max_total and not self.items:
+        if not self.restrict_all_items_max_total and not self.restricted_items:
             frappe.throw(
                 _("Please add at least one item to the items table."),
                 title=_SETTINGS_DOCTYPE
